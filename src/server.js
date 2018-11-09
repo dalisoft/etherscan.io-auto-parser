@@ -19,7 +19,7 @@ new Promise(async resolve => {
 	scanPage(pages).then(async ({ data, page: cachePage }) => {
 		pages = cachePage - pages;
 		return Promise.all(new Array(pages - 1).fill(null).map(async (_, i) => {
-			await sleep(5000);
+			await sleep(10000);
 			const data = (await scanPage(pages - (i + 1)).catch(() => null));
 
 			return data ? data.data : null;

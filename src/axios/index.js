@@ -42,10 +42,10 @@ async function receiptNormalizer(response) {
 				if (!item.address) {
 					return null;
 				}
-				await sleep(2000); // It it calls within 250ms, some calls may be blocked by FORBIDDEN status
+				await sleep(5000);
 
-				let source_code = await getSourceCode(item.address).then(res => res.data ? res.data : new Error('Got wrong with failed result'))
-					.then(res => res.result)
+				let source_code = await getSourceCode(item.address).then(res => res.data ? res.data : null)
+					.then(res => res ? res.result : res)
 					.catch(err => {
 						console.error('Something error', err.message);
 						return null;
