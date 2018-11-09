@@ -47,7 +47,7 @@ async function receiptNormalizer(response) {
 				let source_code = await getSourceCode(item.address).then(res => res.data ? res.data : null)
 					.then(res => res ? res.result : res)
 					.catch(err => {
-						console.error('Something error', err.message);
+						console.error('Error while fetching Source code', err.message);
 						return null;
 					});
 
