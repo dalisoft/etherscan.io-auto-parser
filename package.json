@@ -1,0 +1,31 @@
+{
+  "name": "ether-scan-transactions",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon",
+    "start": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
+    "nedb": "^1.8.0"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "db",
+      "package.json",
+      "package-lock.json"
+    ],
+    "env": {
+      "API_KEY": "EJWC8374JX2F35RWTA3BF5B74BVU9SH743"
+    }
+  },
+  "devDependencies": {
+    "dotenv-safe": "^6.1.0",
+    "eslint": "^5.8.0"
+  }
+}
