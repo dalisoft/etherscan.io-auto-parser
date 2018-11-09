@@ -20,9 +20,9 @@ new Promise(async resolve => {
 		pages = cachePage - pages;
 		return Promise.all(new Array(pages - 1).fill(null).map(async (_, i) => {
 			await sleep(5000);
-			const { data: response } = await scanPage(pages - (i + 1)).catch(() => {});
+			const data = (await scanPage(pages - (i + 1)).catch(() => null));
 
-			return response;
+			return data ? data.data : null;
 		})).then(async pagesResponse => {
 			pagesResponse.unshift(data);
 
