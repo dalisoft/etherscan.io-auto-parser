@@ -26,8 +26,6 @@ new Promise(async resolve => {
 		})).then(async pagesResponse => {
 			pagesResponse.unshift(data);
 
-			// pagesResponse = pagesResponse.reduce(reducers.reduceAccItemMerge, pagesResponse.shift())
-
 			let successItems = 0;
 			let currentPage = pages;
 			let pagesDone = 0;
