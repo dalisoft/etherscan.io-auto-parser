@@ -48,7 +48,6 @@ const fs = require('fs');
         .map((url, i) => ({ url: `${url}/${(pages - currentPage) - i}?ps=100`, page: (pages - currentPage) - i }))
         .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`)), async ({ url, page: pageId }) => {
         await page.goto(url);
-        await page.waitForSelector('select[name="ctl00$ContentPlaceHolder1$ddlRecordsPerPage"]');
 
         let htmlContentInside = await page.evaluate(() => document.documentElement.innerHTML);
         const response = await normalizeHTML(page, htmlContentInside);
