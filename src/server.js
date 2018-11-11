@@ -9,7 +9,9 @@ const { sleep, dbHelper } = require('../src/helpers');
 const fs = require('fs');
 
 (async () => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        // args: [ '--proxy-server=127.0.0.1:9876' ]
+    });
     const page = await browser.newPage();
     await page.goto(endpoints.scanUrl);
 
