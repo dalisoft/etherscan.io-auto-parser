@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script !src='https://unpkg.com/jquery@3'></script>
+        <iframe src='https://etherscan.io/contractsVerified' width="800" height="600"></iframe>
+        <script>
+            const scanUrl = 'https://etherscan.io/contractsVerified';
+            const apiUrl = 'https://api.etherscan.io/api';
+
+            let lastWindow
+
+            function popupwindow() {
+                 // lastWindow = window.open(scanUrl, 'crawl', 'width=800,height=600,resizable=1');
+                 return lastWindow
+} 
+
+            window.addEventListener('load', () => {
+                const winFrame = popupwindow()
+                    setTimeout(() => {
+                       //  console.log('Page', winFrame, winFrame.document)
+                    }, 300)
+            })
+        </script>
+    </body>
+</html>

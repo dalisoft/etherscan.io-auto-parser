@@ -1,69 +1,47 @@
-const nedb = require('nedb');
 const dotEnv = require('dotenv-safe');
 
 dotEnv.config();
 
-const { scanPage } = require('./axios');
-const { sleep, dbHelper } = require('./helpers');
+const puppeteer = require('puppeteer');
+const { endpoints } = require('../src/config');
+const { receiptNormalizer: normalizeHTML } = require('../src/axios');
+const { sleep, dbHelper } = require('../src/helpers');
+const fs = require('fs');
 
-const cache = new nedb({ filename: '.cache', autoload: true });
+(async () => {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(endpoints.scanUrl);
 
-new Promise(async resolve => {
-	let pages = await new Promise((resolve, reject) => cache.find({}, (err, doc) => {
-		if (err) {
-			return reject(err);
-		}
-		return resolve(doc.pop());
-	})).then(({pagesDone}) => pagesDone || 0).catch(() => 0);
+    const { page: pages, data } = await page.evaluate(() => ({data: document.documentElement.innerHTML})).then(normalizeHTML);
 
-	scanPage(pages).then(async ({ data, page: cachePage }) => {
-		pages = cachePage - pages;
-		return Promise.all(new Array(pages - 1).fill(null).map(async (_, i) => {
-			await sleep(10000);
-			const data = (await scanPage(pages - (i + 1)).catch(() => null));
+    const firstPage = fs.existsSync(`./db/pages/${1}.db`);
 
-			return data ? data.data : null;
-		})).then(async pagesResponse => {
-			pagesResponse.unshift(data);
+    if (!firstPage) {
+        const _db = dbHelper.createDb('db/pages/1.db');
+        dbHelper.insert(_db, data);
+    }
 
-			let successItems = 0;
-			let currentPage = pages;
-			let pagesDone = 0;
-			if (Array.isArray(pagesResponse)) {
-				await Promise.all(pagesResponse.map(async (pagesItems, i) => {
-					const db = new nedb({ filename: `db/pages/${(pagesResponse.length - i)}.db`, autoload: true });
 
-					const count = await dbHelper.count(db);
-					if (count === pagesItems.length) {
-						return false;
-					}
-					return await Promise.all(pagesItems.filter(item => item).map(item => new Promise((resolve, reject) => {
-						db.insert(item, (err, doc) => {
-							if (err || !doc) {
-								return reject(err);
-							}
-							successItems++;
+    await Promise.all(new Array(pages - 1)
+        .fill(endpoints.scanUrl)
+        .map((url, i) => ({ url: `${url}/${pages - i}`, page: pages - i }))
+        .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`))
+        .map(async ({ url, page: pageId }, i) => {
+            await sleep(i * 1500);
 
-							resolve(doc);
-						});
-					}))).then(() => {
-						pagesDone++;
-						currentPage--;
-					});
-				}));
+            await page.goto(url);
+            const { data } = await page.evaluate(() => ({data: document.documentElement.innerHTML})).then(normalizeHTML).catch(() => null);
 
-				const $set = { cache: true, successItems, currentPage, pagesDone };
-				cache.findOne({ cache: true }, (err, doc) => {
-					if (err || !doc) {
-						cache.insert($set);
-						return err;
-					}
-					cache.update(doc, $set, {});
-				});
-			}
-		}).catch(err => {
-			console.error('Error', err);
-		});
-	});
-	resolve();
-});
+            if (!data) {
+                throw new Error('Error occured within page crawler parsings');
+            }
+
+            const _db = dbHelper.createDb(`db/pages/${pageId}.db`);
+            dbHelper.insert(_db, data);
+
+            return data;
+        }));
+
+    await browser.close();
+})();
