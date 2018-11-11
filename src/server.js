@@ -3,31 +3,33 @@ const dotEnv = require('dotenv-safe');
 dotEnv.config();
 
 const puppeteer = require('puppeteer');
+const Promise = require('bluebird');
 const { endpoints } = require('../src/config');
-const { receiptNormalizer: normalizeHTML } = require('../src/axios');
+const normalizeHTML = require('../src/parser');
 const { dbHelper } = require('../src/helpers');
 const fs = require('fs');
 
 (async () => {
     const browser = await puppeteer.launch({
-        // args: [ '--proxy-server=127.0.0.1:9876' ]
+        headless: false,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+            // '--proxy-server=x.x.x.x:pppp'
+        ]
     });
     const page = await browser.newPage();
-    await page.goto(endpoints.scanUrl);
 
-    await page.evaluate(() => {
-        const selectElem = document.querySelector('select[name="ctl00$ContentPlaceHolder1$ddlRecordsPerPage"]');
-        const optionElem = selectElem.querySelector('option:nth-child(4)');
-        optionElem.selected = true;
-        const event = new Event('change', {bubbles: true});
-        selectElem.dispatchEvent(event);
-    });
+    await page.goto(`${endpoints.scanUrl}/?ps=100`);
 
-    await page.waitForSelector('select[name="ctl00$ContentPlaceHolder1$ddlRecordsPerPage"]');
+    let htmlContent = await page.evaluate(() => document.documentElement.innerHTML);
 
-    const { page: pages, data } = await page.evaluate(() => ({data: document.documentElement.innerHTML})).then(normalizeHTML);
+    // eslint-disable-next-line no-unused-vars
+    const { page: pages, data } = await normalizeHTML(page, htmlContent);
 
-    // const pages = 1; // Uncomment when need specified amount of page that should be fetched
+    // const pages = 5; // Uncomment when need specified amount of page that should be fetched
     let currentPage = 0; // When you want fetch from specified page range
 
     const firstPage = fs.existsSync(`./db/pages/${1}.db`);
@@ -41,25 +43,26 @@ const fs = require('fs');
         return false;
     }
 
-    await Promise.all(new Array(pages - 1)
+    await Promise.each(new Array(pages - 1)
         .fill(endpoints.scanUrl)
-        .map((url, i) => ({ url: `${url}/${pages - currentPage - i}`, page: pages - currentPage - i }))
-        .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`))
-        .map(async ({ url, page: pageId }) => {
-            await page.waitForSelector('select[name="ctl00$ContentPlaceHolder1$ddlRecordsPerPage"]');
+        .map((url, i) => ({ url: `${url}/${(pages - currentPage) - i}?ps=100`, page: (pages - currentPage) - i }))
+        .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`)), async ({ url, page: pageId }) => {
+        await page.goto(url);
+        await page.waitForSelector('select[name="ctl00$ContentPlaceHolder1$ddlRecordsPerPage"]');
 
-            await page.goto(url);
-            const { data } = await page.evaluate(() => ({data: document.documentElement.innerHTML})).then(normalizeHTML).catch(() => null);
+        let htmlContentInside = await page.evaluate(() => document.documentElement.innerHTML);
+        const response = await normalizeHTML(page, htmlContentInside);
 
-            if (!data) {
-                throw new Error('Error occured within page crawler parsings');
-            }
+        if (!response || !response.data) {
+            throw new Error('Error occured within page crawler parsings');
+        }
 
-            const _db = dbHelper.createDb(`db/pages/${pageId}.db`);
-            dbHelper.insert(_db, data);
+        const _dbInstancee = dbHelper.createDb(`db/pages/${pageId}.db`);
+        dbHelper.insert(_dbInstancee, response.data);
 
-            return data;
-        }));
+
+        return response.data;
+    });
 
     await browser.close();
 })();

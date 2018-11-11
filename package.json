@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
     "cheerio": "^1.0.0-rc.2",
     "nedb": "^1.8.0",
     "puppeteer": "^1.10.0"
