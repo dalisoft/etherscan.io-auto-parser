@@ -44,26 +44,6 @@ async function receiptNormalizer(response) {
         const container = $(response.data).find('.profile.container');
         const page = parseInt(container.find('.row:last-child').find('p[align="right"]').find('b:last-child').text());
 
-        /*
-		IT HAS BEEN BOOKMARKLET FOR CHROME CONSOLE
-		AND IT IS DID NOT WORK
-		/// /// /// /// ///
-
-		function gotopg(i = 1) {
-			window.location = `https://etherscan.io/contractsVerified/${i}`
-			return new Promise(resolve => setTimeout(resolve, 3000))
-		}
-		await gotopg().then(() => {
-		var c = document.body.querySelector('.profile.container')
-		var pg = c.querySelector('.row:last-child > p[align="right"] > b:last-child')
-
-		var tbody = c.querySelector('tbody')
-		var titems = tbody.querySelectorAll('tr > td')
-
-		console.log({ titems, pg })
-		})
-		*/
-
         const rawTableSourceItems = Object.values(container.find('tbody').find('tr > td'))
             .map(reident)
             .filter(item => item);
