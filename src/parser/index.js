@@ -24,7 +24,7 @@ module.exports = async (apiPage, response) => {
             }
             const url = `${endpoints.apiUrl}/?module=contract&action=getsourcecode&address=${item.address}&apiKey=${(i % 2) === 1 ? API_KEY : API_KEY2}`;
     
-            await sleep(i * 1000);
+            await sleep(i * 500);
 
             let source_code = await fetch(url).then(res => res.json()).catch(() => null);
     
