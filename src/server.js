@@ -10,6 +10,10 @@ const { dbHelper } = require('../src/helpers');
 const fs = require('fs');
 
 (async () => {
+    const gotoParams = {
+        timeout: 3000000
+    };
+
     const browser = await puppeteer.launch({
         headless: false,
         args: [
@@ -22,7 +26,9 @@ const fs = require('fs');
     });
     const page = await browser.newPage();
 
-    await page.goto(`${endpoints.scanUrl}/?ps=100`);
+    await page.goto(`${endpoints.scanUrl}/?ps=100`, gotoParams);
+
+    fs.unlinkSync('./db/pages/1.db');
 
     let htmlContent = await page.evaluate(() => document.documentElement.innerHTML);
 
@@ -32,12 +38,8 @@ const fs = require('fs');
     // const pages = 5; // Uncomment when need specified amount of page that should be fetched
     let currentPage = 0; // When you want fetch from specified page range
 
-    const firstPage = fs.existsSync(`./db/pages/${1}.db`);
-
-    if (!firstPage) {
-        const _db = dbHelper.createDb('db/pages/1.db');
-        dbHelper.insert(_db, data);
-    }
+    const _db = dbHelper.createDb('db/pages/1.db');
+    dbHelper.insert(_db, data);
 
     if (pages < 1) {
         return false;
@@ -47,7 +49,7 @@ const fs = require('fs');
         .fill(endpoints.scanUrl)
         .map((url, i) => ({ url: `${url}/${(pages - currentPage) - i}?ps=100`, page: (pages - currentPage) - i }))
         .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`)), async ({ url, page: pageId }) => {
-        await page.goto(url);
+        await page.goto(url, gotoParams);
 
         let htmlContentInside = await page.evaluate(() => document.documentElement.innerHTML);
         const response = await normalizeHTML(page, htmlContentInside);
