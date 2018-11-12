@@ -22,7 +22,7 @@ module.exports = async (apiPage, response) => {
             if (!item.address) {
                 return null;
             }
-            const url = `${endpoints.apiUrl}/?module=contract&action=getsourcecode&address=${item.address}&apiKey=${(i % 2) === 1 ? API_KEY : API_KEY2}`;
+            const url = `${endpoints.apiUrl}/?module=contract&action=getsourcecode&address=${item.address}&apiKey=${(i % 2) === 0 ? API_KEY : API_KEY2}`;
     
             await sleep(i * 500);
 
