@@ -4,14 +4,12 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "bluebird": "^3.5.3",
     "cheerio": "^1.0.0-rc.2",
     "nedb": "^1.8.0",
     "puppeteer": "^1.10.0"
@@ -21,10 +19,7 @@
       "db",
       "package.json",
       "package-lock.json"
-    ],
-    "env": {
-      "API_KEY": "EJWC8374JX2F35RWTA3BF5B74BVU9SH743"
-    }
+    ]
   },
   "devDependencies": {
     "dotenv-safe": "^6.1.0",
