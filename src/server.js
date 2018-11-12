@@ -28,7 +28,9 @@ const fs = require('fs');
 
     await page.goto(`${endpoints.scanUrl}/?ps=100`, gotoParams);
 
-    fs.unlinkSync('./db/pages/1.db');
+    if (fs.existsSync('./db/pages/1.db')) {
+        fs.unlinkSync('./db/pages/1.db');
+    }
 
     let htmlContent = await page.evaluate(() => document.documentElement.innerHTML);
 

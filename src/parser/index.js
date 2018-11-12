@@ -1,8 +1,8 @@
+/* globals Promise */
 const { endpoints } = require('../config');
 const { reident } = require('../helpers');
 const { reducers } = require('../hof');
 const $ = require('cheerio');
-const Promise = require('bluebird');
 
 const { API_KEY, API_KEY2 } = process.env;
 
