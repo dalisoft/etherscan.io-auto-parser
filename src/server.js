@@ -47,7 +47,7 @@ const fs = require('fs');
 
     await Promise.each(new Array(pages - 1)
         .fill(endpoints.scanUrl)
-        .map((url, i) => ({ url: `${url}/${(pages - currentPage) - i}?ps=100`, page: (pages - currentPage) - i }))
+        .map((url, i) => ({ url: `${url}/${currentPage + i + 2}?ps=100`, page: currentPage + i + 2 }))
         .filter(({ page }) => !fs.existsSync(`./db/pages/${page}.db`)), async ({ url, page: pageId }) => {
         await page.goto(url, gotoParams);
 
