@@ -7,8 +7,8 @@ const $ = require('cheerio');
 const { API_KEY, API_KEY2 } = process.env;
 
 module.exports = async (apiPage, response) => {
-    const container = $(response).find('.profile.container');
-    const page = parseInt(container.find('.row:last-child').find('p[align="right"]').find('b:last-child').text());
+    const container = $(response).find('#ContentPlaceHolder1_mainrow');
+    const page = parseInt(container.find('.pagination:nth-child(2)').find('.page-link').find('.font-weight-medium:last-child').text());
 
     const rawTableSourceItems = Object.values(container.find('tbody').find('tr > td'))
         .map(reident)
@@ -23,21 +23,21 @@ module.exports = async (apiPage, response) => {
                 return null;
             }
             const url = `${endpoints.apiUrl}/?module=contract&action=getsourcecode&address=${item.address}&apiKey=${(i % 2) === 0 ? API_KEY : API_KEY2}`;
-    
+
             await sleep(i * 500);
 
             let source_code = await fetch(url).then(res => res.json()).catch(() => null);
-    
+
             if (!source_code) {
                 return null;
             }
-    
+
             if (source_code.result) {
                 source_code = source_code.result;
             } else {
                 return null;
             }
-    
+
             item.source = source_code[0].SourceCode;
             item.abi = source_code[0].ABI;
             return item;

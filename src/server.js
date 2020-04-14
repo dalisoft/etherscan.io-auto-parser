@@ -1,6 +1,6 @@
 const dotEnv = require('dotenv-safe');
 
-dotEnv.config();
+dotEnv.config({ allowEmptyValues: true });
 
 const puppeteer = require('puppeteer');
 const Promise = require('bluebird');
